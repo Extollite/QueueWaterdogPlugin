@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class Config {
 
-    public static String regex,
+    public static String
             serverFullMessage,
             queuePosition,
             kickMessage,
@@ -20,7 +20,6 @@ public class Config {
             queuePriorityPermission,
             adminPermission;
     public static int mainServerSlots,
-            queueServerSlots,
             queueMoveDelay,
             queuePriorityChance;
 

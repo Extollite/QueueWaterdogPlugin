@@ -26,7 +26,7 @@ import pl.extollite.queuewaterdog.listener.QueryEventListener;
 public class QueuePlugin extends Plugin {
     public static LinkedHashMap<UUID, String> regularQueue = new LinkedHashMap<>();
     public static LinkedHashMap<UUID, String> priorityQueue = new LinkedHashMap<>();
-    public Configuration config;
+    private Configuration config;
     private static QueuePlugin instance;
 
     public static QueuePlugin getInstance() {
@@ -92,13 +92,13 @@ public class QueuePlugin extends Plugin {
 
         //checks if servers are online
         try {
-            getProxy().getScheduler().schedule(this, EventListener::CheckIfMainServerIsOnline, 500, 500, TimeUnit.MILLISECONDS);
+            getProxy().getScheduler().schedule(this, EventListener::CheckIfMainServerIsOnline, 5, 5, TimeUnit.SECONDS);
         } catch (NoSuchElementException error) {
             //ignore
         }
 
         try {
-            getProxy().getScheduler().schedule(this, EventListener::CheckIfQueueServerIsOnline, 500, 500, TimeUnit.MILLISECONDS);
+            getProxy().getScheduler().schedule(this, EventListener::CheckIfQueueServerIsOnline, 5, 5, TimeUnit.SECONDS);
         } catch (NoSuchElementException error) {
             //ignore
         }

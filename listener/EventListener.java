@@ -9,6 +9,7 @@ import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -19,11 +20,11 @@ import pl.extollite.queuewaterdog.QueuePlugin;
  * Events
  */
 public class EventListener implements Listener {
-    List<UUID> regular = new ArrayList<>();
-    List<UUID> priority = new ArrayList<>();
+    private final List<UUID> regular = new ArrayList<>();
+    private final List<UUID> priority = new ArrayList<>();
     private final static ServerInfo queue = ProxyServer.getInstance().getServerInfo(Config.queueServer);
-    public static boolean mainServerOnline = false;
-    public static boolean queueServerOnline = false;
+    private static boolean mainServerOnline = false;
+    private static boolean queueServerOnline = false;
     private static final Random random = new Random();
 
     public static void CheckIfMainServerIsOnline() {
@@ -31,7 +32,7 @@ public class EventListener implements Listener {
             DatagramSocket s = new DatagramSocket(ProxyServer.getInstance().getConfig().getServerInfo(Config.mainServer).getAddress().getPort(), ProxyServer.getInstance().getConfig().getServerInfo(Config.mainServer).getAddress().getAddress());
             s.close();
             // Port opened to bind so server is OFFLINE
-            queueServerOnline = false;
+            mainServerOnline = false;
         } catch (BindException e) {
             // Port bind so server is ONLINE
             mainServerOnline = true;
@@ -57,24 +58,32 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onLogin(PostLoginEvent event) {
-        if (mainServerOnline && queueServerOnline) {
-            if (!Config.alwaysQueue && ProxyServer.getInstance().getOnlineCount() <= Config.mainServerSlots)
-                return;
-            if (event.getPlayer().hasPermission(Config.queuePriorityPermission)) {
-                // Send the priority player to the priority queue
-                priority.add(event.getPlayer().getUniqueId());
-            } else if (!event.getPlayer().hasPermission(Config.queueBypassPermission) && !event.getPlayer().hasPermission(Config.queuePriorityPermission)) {
-                // Send the player to the regular queue
-                regular.add(event.getPlayer().getUniqueId());
-            }
-        } else {
-            event.getPlayer().disconnect(TextComponent.fromLegacyText(Config.serverDownKickMessage.replace("&", "§")));
+    public void onLogin(PreLoginEvent event){
+        if (!mainServerOnline || !queueServerOnline) {
+            event.setCancelReason(TextComponent.fromLegacyText(Config.serverDownKickMessage.replace("&", "§")));
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPostLogin(PostLoginEvent event) {
+        if (!Config.alwaysQueue && ProxyServer.getInstance().getOnlineCount() <= Config.mainServerSlots)
+            return;
+        if (event.getPlayer().hasPermission(Config.queuePriorityPermission)) {
+            // Send the priority player to the priority queue
+            priority.add(event.getPlayer().getUniqueId());
+        } else if (!event.getPlayer().hasPermission(Config.queueBypassPermission) && !event.getPlayer().hasPermission(Config.queuePriorityPermission)) {
+            // Send the player to the regular queue
+            regular.add(event.getPlayer().getUniqueId());
         }
     }
 
     @EventHandler
     public void onSend(ServerConnectEvent event) {
+/*        if ((event.getTarget().getName().equals(Config.mainServer) || event.getTarget().getName().equals(Config.queueServer)) && (!mainServerOnline || !queueServerOnline )) {
+            event.setCancelled(true);
+            return;
+        }*/
         ProxiedPlayer player = event.getPlayer();
         List<UUID> queueList = null;
         Map<UUID, String> queueMap = null;
@@ -98,7 +107,7 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onDisconnect(PlayerDisconnectEvent event) {
+    public void onPlayerDisconnect(PlayerDisconnectEvent event) {
         //if a play in queue logs off it removes them and their position so when they log again
         //they get sent to the back of the line and have to wait through the queue again yeah
         queuesRemovePlayer(event.getPlayer());
@@ -121,6 +130,10 @@ public class EventListener implements Listener {
             return;
         Entry<UUID, String> entry = queue.entrySet().iterator().next();
         ProxiedPlayer player = ProxyServer.getInstance().getPlayer(entry.getKey());
+        if(player == null){
+            queue.remove(entry.getKey());
+            return;
+        }
         player.connect(ProxyServer.getInstance().getServerInfo(entry.getValue()));
         player.sendMessage(ChatMessageType.CHAT, TextComponent.fromLegacyText(Config.joinMainServerMessage.replace("&", "§").replace("<server>", entry.getValue())));
         queue.remove(entry.getKey());
@@ -137,15 +150,22 @@ public class EventListener implements Listener {
     private void queuesRemovePlayer(ProxiedPlayer player){
         if(player == null || player.getServer() == null)
             return;
+        Map<UUID, String> queueMap = null;
+        List<UUID> queueList = null;
+        if (player.hasPermission(Config.queuePriorityPermission)) {
+            queueList = priority;
+            queueMap = QueuePlugin.priorityQueue;
+        } else if (!player.hasPermission(Config.queueBypassPermission) && !player.hasPermission(Config.queuePriorityPermission)) {
+            queueList = regular;
+            queueMap = QueuePlugin.regularQueue;
+        }
         if (player.getServer().getInfo().getName().equalsIgnoreCase(Config.queueServer)) {
             player.setReconnectServer(ProxyServer.getInstance()
-                    .getServerInfo(QueuePlugin.priorityQueue.get(player.getUniqueId())));
-            player.setReconnectServer(ProxyServer.getInstance()
-                    .getServerInfo(QueuePlugin.regularQueue.get(player.getUniqueId())));
+                    .getServerInfo(Config.mainServer));
         }
-        QueuePlugin.priorityQueue.remove(player.getUniqueId());
-        QueuePlugin.regularQueue.remove(player.getUniqueId());
-        priority.remove(player.getUniqueId());
-        regular.remove(player.getUniqueId());
+        if(queueMap == null)
+            return;
+        queueMap.remove(player.getUniqueId());
+        queueList.remove(player.getUniqueId());
     }
 }

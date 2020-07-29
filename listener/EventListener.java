@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -80,10 +82,6 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onSend(ServerConnectEvent event) {
-/*        if ((event.getTarget().getName().equals(Config.mainServer) || event.getTarget().getName().equals(Config.queueServer)) && (!mainServerOnline || !queueServerOnline )) {
-            event.setCancelled(true);
-            return;
-        }*/
         ProxiedPlayer player = event.getPlayer();
         List<UUID> queueList = null;
         Map<UUID, String> queueMap = null;
@@ -102,8 +100,27 @@ public class EventListener implements Listener {
         event.setTarget(queue);
         player.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + Config.serverFullMessage.replace("&", "§")));
         // Store the data concerning the player's destination
-        Map<UUID, String> finalQueueMap = queueMap;
-        QueuePlugin.getInstance().getProxy().getScheduler().schedule(QueuePlugin.getInstance(), () -> finalQueueMap.put(player.getUniqueId(), originalTarget), 5, TimeUnit.SECONDS);
+    }
+
+    @EventHandler
+    public void onConnected(PluginMessageEvent event){
+        ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
+        String subchannel = in.readUTF();
+        if(subchannel.equals("UUID")){
+            UUID uuid = UUID.fromString(in.readUTF());
+            ProxiedPlayer player = QueuePlugin.getInstance().getProxy().getPlayer(uuid);
+            Map<UUID, String> queueMap = null;
+            if (player.hasPermission(Config.queuePriorityPermission)) {
+                queueMap = QueuePlugin.priorityQueue;
+            } else if (!player.hasPermission(Config.queueBypassPermission) && !player.hasPermission(Config.queuePriorityPermission)) {
+                queueMap = QueuePlugin.regularQueue;
+            }
+            if(queueMap == null)
+                return;
+            Map<UUID, String> finalQueueMap = queueMap;
+            QueuePlugin.getInstance().getProxy().getScheduler().schedule(QueuePlugin.getInstance(), ()-> finalQueueMap.put(player.getUniqueId(), Config.mainServer), 1, TimeUnit.SECONDS);
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -126,14 +143,17 @@ public class EventListener implements Listener {
         Map<UUID, String> queue = QueuePlugin.regularQueue;
         if (chance <= Config.queuePriorityChance && !QueuePlugin.priorityQueue.isEmpty()) {
             queue = QueuePlugin.priorityQueue;
-        } else if(queue.isEmpty())
+        } else if(queue.isEmpty()){
             return;
+        }
         Entry<UUID, String> entry = queue.entrySet().iterator().next();
         ProxiedPlayer player = ProxyServer.getInstance().getPlayer(entry.getKey());
         if(player == null){
             queue.remove(entry.getKey());
             return;
         }
+        if(!player.isConnected())
+            return;
         player.connect(ProxyServer.getInstance().getServerInfo(entry.getValue()));
         player.sendMessage(ChatMessageType.CHAT, TextComponent.fromLegacyText(Config.joinMainServerMessage.replace("&", "§").replace("<server>", entry.getValue())));
         queue.remove(entry.getKey());

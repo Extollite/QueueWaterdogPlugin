@@ -37,7 +37,6 @@ public class QueuePlugin extends Plugin {
     public void onEnable() {
         processConfig();
         instance = this;
-        this.getLogger().info("Plugin by " + this.getDescription().getAuthor());
         this.getLogger().info("Based on https://github.com/Leeeunderscore/LeeesBungeeQueue");
         getProxy().getPluginManager().registerCommand(this, new ReloadCommand());
         getProxy().getPluginManager().registerListener(this, new EventListener());
@@ -113,17 +112,17 @@ public class QueuePlugin extends Plugin {
 
                 ProxiedPlayer player = getProxy().getPlayer(entry.getKey());
                 if (player == null) {
-                    priorityQueue.remove(entry.getKey());
+                    queue.remove(entry.getKey());
                     continue;
                 }
                 player.sendMessage((Config.positionMessageOnHotBar ? ChatMessageType.ACTION_BAR : ChatMessageType.CHAT),
                         TextComponent.fromLegacyText(Config.queuePosition.replace("&", "§")
                                 .replace("<position>", i + "").replace("<total>",
-                                        regularQueue.size() + "").replace("<server>",
+                                        queue.size() + "").replace("<server>",
                                         entry.getValue())));
 
             } catch (Exception e) {
-                priorityQueue.remove(entry.getKey());
+                queue.remove(entry.getKey());
                 //TODO: handle exception
             }
         }

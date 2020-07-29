@@ -21,7 +21,8 @@ public class Config {
             adminPermission;
     public static int mainServerSlots,
             queueServerSlots,
-            queueMoveDelay;
+            queueMoveDelay,
+            queuePriorityChance;
 
     public static boolean positionMessageOnHotBar,
             enableKickMessage,

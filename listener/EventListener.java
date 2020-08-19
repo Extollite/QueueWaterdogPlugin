@@ -152,8 +152,6 @@ public class EventListener implements Listener {
             queue.remove(entry.getKey());
             return;
         }
-        if(!player.isConnected())
-            return;
         player.connect(ProxyServer.getInstance().getServerInfo(entry.getValue()));
         player.sendMessage(ChatMessageType.CHAT, TextComponent.fromLegacyText(Config.joinMainServerMessage.replace("&", "§").replace("<server>", entry.getValue())));
         queue.remove(entry.getKey());

@@ -1,0 +1,7 @@
+name: QueueWaterdogPlugin
+main: pl.extollite.QueuePlugin
+version: 1.0.0
+author: Nate, Legault, Extollite
+commands:
+  qw:
+    description: to reload the config

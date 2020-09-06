@@ -1,0 +1,48 @@
+#Server is full message
+serverFullMessage: "&22b2t is full"
+
+
+#Position in queue message by default only sends in chat every 10 seconds
+#you can have it on the hotbar by setting positionMessageOnHotBar: false to true
+positionMessageOnHotBar: false
+queuePosition: "&6Position in queue: &l<position>"
+enableKickMessage: true
+kickMessage: "&6You have lost connection to the server"
+serverDownKickMessage: "&b2b&32t &6is down please try again later :("
+
+#this shows the queue size when you hover over the ping on the server list
+customVersion: "&b6b&36t &61.16"
+
+#Set the queue servers name that is in the bungee pl.extollite.config.yml
+#Note that the main server is always the one you login to first
+#The main server server is the one that has a queue to protect it
+#make sure you set the default server in bungee pl.extollite.config.yml correctly
+queueServer: "queue"
+mainServer: "main"
+
+
+#Connecting to server message use <server> if you want it
+#to just use the name of the default server
+joinMainServerMessage: "&6Connecting to 2b2t"
+
+
+#Max players allowed onto main server
+mainServerSlots: 100
+
+
+#Queue move delay in milliseconds default is 2000ms
+#please note this only guaranteed to not have issues 2000ms and higher
+queueMoveDelay: 2000
+
+#Chance of priority user to join
+queuePriorityChance: 75
+
+
+#Always add players to queue to prevent server crashing from to many joins
+alwaysQueue: true
+
+
+#Permissions
+queueBypassPermission: "queue.override"
+queuePriorityPermission: "queue.priority"
+adminPermission: "queue.admin"

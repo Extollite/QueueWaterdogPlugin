@@ -1,4 +1,4 @@
-package pl.extollite.queuewaterdog;
+package pl.extollite;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,10 +15,10 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
-import pl.extollite.queuewaterdog.command.ReloadCommand;
-import pl.extollite.queuewaterdog.config.Config;
-import pl.extollite.queuewaterdog.listener.EventListener;
-import pl.extollite.queuewaterdog.listener.QueryEventListener;
+import pl.extollite.command.ReloadCommand;
+import pl.extollite.config.Config;
+import pl.extollite.listener.EventListener;
+import pl.extollite.listener.QueryEventListener;
 
 /**
  * QueuePlugin

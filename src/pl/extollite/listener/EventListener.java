@@ -1,4 +1,4 @@
-package pl.extollite.queuewaterdog.listener;
+package pl.extollite.listener;
 
 import java.net.*;
 import java.util.*;
@@ -15,8 +15,8 @@ import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import pl.extollite.queuewaterdog.config.Config;
-import pl.extollite.queuewaterdog.QueuePlugin;
+import pl.extollite.config.Config;
+import pl.extollite.QueuePlugin;
 
 /**
  * Events
@@ -95,8 +95,10 @@ public class EventListener implements Listener {
         if (queueList == null || !queueList.contains(player.getUniqueId()))
             return;
         queueList.remove(player.getUniqueId());
-        // Send the player to the queue and send a message.
+        // Send the player to the queue and send a message
         String originalTarget = event.getTarget().getName();
+        if(!originalTarget.equals(Config.mainServer) && !originalTarget.equals(Config.queueServer))
+            return;
         event.setTarget(queue);
         player.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + Config.serverFullMessage.replace("&", "§")));
         // Store the data concerning the player's destination

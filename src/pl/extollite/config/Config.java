@@ -1,4 +1,4 @@
-package pl.extollite.queuewaterdog.config;
+package pl.extollite.config;
 
 import java.util.List;
 

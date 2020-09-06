@@ -1,9 +1,9 @@
-package pl.extollite.queuewaterdog.listener;
+package pl.extollite.listener;
 
 import io.github.waterfallmc.waterfall.event.ProxyQueryEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import pl.extollite.queuewaterdog.config.Config;
+import pl.extollite.config.Config;
 
 public class QueryEventListener implements Listener {
     String version;

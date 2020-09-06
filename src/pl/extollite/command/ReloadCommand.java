@@ -1,10 +1,10 @@
-package pl.extollite.queuewaterdog.command;
+package pl.extollite.command;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
-import pl.extollite.queuewaterdog.config.Config;
-import pl.extollite.queuewaterdog.QueuePlugin;
+import pl.extollite.config.Config;
+import pl.extollite.QueuePlugin;
 
 public class ReloadCommand extends Command {
 
